@@ -48,7 +48,7 @@ export default function Index() {
 
   return (
     <main className="container mx-auto py-8 space-y-8">
-      <h1 className="text-3xl font-bold mb-6">Welcome to liblab</h1>
+      <h1 className="text-3xl font-bold mb-6">Amazing app</h1>
 
       <WithErrorHandling
         queryData={organizationsFetcher.data}
