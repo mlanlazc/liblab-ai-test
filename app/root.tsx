@@ -1,4 +1,4 @@
-import { Outlet, useRouteError } from '@remix-run/react';
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useRouteError } from '@remix-run/react';
 import { useEffect, useRef } from 'react';
 
 import './tailwind.css';
@@ -29,8 +29,21 @@ export function ErrorBoundary() {
 
 export default function App() {
   return (
-    <Layout>
-      <Outlet />
-    </Layout>
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <Layout>
+          <Outlet />
+        </Layout>
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
   );
 }

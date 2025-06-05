@@ -33,58 +33,42 @@ const ChartSharePercentage = <TData extends Record<string, string | number>[]>({
   chartConfig,
   data,
   backgroundColor,
-}: ChartSharePercentageProps<TData>) => {
-  const processedChartConfig = Object.keys(chartConfig).reduce((acc, key, index) => {
-    const config = chartConfig[key];
-    if (config.theme) {
-      acc[key] = config;
-    } else {
-      acc[key] = {
-        ...config,
-        color: config.color || `var(--chart-${(index % 10) + 1})`
-      };
-    }
-    return acc;
-  }, {} as ChartConfig);
-
-  console.log(processedChartConfig);
-  
-  return (
-    <UniversalChartCard
-      className={cn(
-        className,
-        backgroundColor &&
-          `bg-gradient-to-r from-background to-${backgroundColor}-500/5 border-${backgroundColor}-500/10`,
-      )}
-      title={title}
-      description={description}
-      CardFooterComponent={footerRenderer?.(data)}
-      CardHeaderComponent={headerRenderer?.(data)}
-      chartConfig={processedChartConfig}
-    >
-      <PieChart>
-        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-        <ChartLegend
-          content={({ payload }) => (
-            <ChartLegendContent nameKey={nameKey} payload={payload} layout="vertical" verticalAlign="middle" />
-          )}
-          layout="vertical"
-          verticalAlign="middle"
-          align="right"
-        />
-        <Pie
-          innerRadius={'54%'}
-          paddingAngle={2.5}
-          minAngle={4}
-          cornerRadius={'12%'}
-          strokeWidth={2}
+}: ChartSharePercentageProps<TData>) => (
+  <UniversalChartCard
+    className={cn(
+      className,
+      backgroundColor &&
+        `bg-gradient-to-r from-background to-${backgroundColor}-500/5 border-${backgroundColor}-500/10`,
+    )}
+    title={title}
+    description={description}
+    CardFooterComponent={footerRenderer?.(data)}
+    CardHeaderComponent={headerRenderer?.(data)}
+    chartConfig={chartConfig}
+  >
+    <PieChart>
+      <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+      <ChartLegend
+        content={({ payload }) => (
+          <ChartLegendContent nameKey={nameKey} payload={payload} layout="vertical" verticalAlign="middle" />
+        )}
+        layout="vertical"
+        verticalAlign="middle"
+        align="right"
+      />
+      <Pie
+        innerRadius={'54%'}
+        paddingAngle={2.5}
+        minAngle={4}
+        cornerRadius={'12%'}
+        strokeWidth={2}
         data={data.map((item) => ({
           ...item,
           fill: `var(--color-${String(item[nameKey]).replace(/\s+/g, '')})`,
         }))}
-          dataKey={dataKey}
-          nameKey={nameKey}
-        >
+        dataKey={dataKey}
+        nameKey={nameKey}
+      >
         {data.map((entry, index) => {
           const colorKey = String(entry[nameKey]).replace(/\s+/g, '');
           return (
@@ -98,45 +82,44 @@ const ChartSharePercentage = <TData extends Record<string, string | number>[]>({
             />
           );
         })}
-          <LabelList
-            dataKey={dataKey}
-            className="fill-background"
-            stroke="none"
-            fontSize={11}
-            formatter={valueFormatter}
-          />
-          {centerValueRenderer && (
-            <Label
-              content={({ viewBox }) => {
-                const { title, subtitle } = centerValueRenderer(data);
+        <LabelList
+          dataKey={dataKey}
+          className="fill-background"
+          stroke="none"
+          fontSize={11}
+          formatter={valueFormatter}
+        />
+        {centerValueRenderer && (
+          <Label
+            content={({ viewBox }) => {
+              const { title, subtitle } = centerValueRenderer(data);
 
-                if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                  return (
-                    <text
-                      className="pointer-events-none"
-                      x={viewBox.cx}
-                      y={viewBox.cy}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                    >
-                      <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-[1.8em] font-bold">
-                        {title}
+              if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                return (
+                  <text
+                    className="pointer-events-none"
+                    x={viewBox.cx}
+                    y={viewBox.cy}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                  >
+                    <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-[1.8em] font-bold">
+                      {title}
+                    </tspan>
+                    {subtitle && (
+                      <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 20} className="fill-muted-foreground">
+                        {subtitle}
                       </tspan>
-                      {subtitle && (
-                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 20} className="fill-muted-foreground">
-                          {subtitle}
-                        </tspan>
-                      )}
-                    </text>
-                  );
-                }
-              }}
-            />
-          )}
-        </Pie>
-      </PieChart>
-    </UniversalChartCard>
-  );
-};
+                    )}
+                  </text>
+                );
+              }
+            }}
+          />
+        )}
+      </Pie>
+    </PieChart>
+  </UniversalChartCard>
+);
 
 export { ChartSharePercentage };
