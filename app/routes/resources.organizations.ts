@@ -1,5 +1,5 @@
 import { executePostgresQuery } from '@/db/execute-query';
-import { OrganizationCountData, OrganizationData, organizationsCountQuery, organizationsQuery } from '@/routes/_index/components/OrganizationsTable';
+import { OrganizationCountData, OrganizationData, organizationsCountQuery, organizationsQuery } from '@/routes/organizations/components/OrganizationsTable';
 
 export async function action({ request }: { request: Request }) {
   if (request.method !== 'POST') {
