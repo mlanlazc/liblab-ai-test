@@ -1,21 +1,35 @@
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useFetcher } from '@remix-run/react';
 import { executePostgresQuery, QueryData } from '@/db/execute-query';
 import { LoaderError } from '@/types/loader-error';
 import { WithErrorHandling } from '@/components/hoc/error-handling-wrapper/error-handling-wrapper';
 import { useEffect } from 'react';
 import { OrganizationData, OrganizationCountData, organizationsQuery, organizationsCountQuery, OrganizationsTable } from './organizations/components/OrganizationsTable';
-import { ErrorComponent } from '@/components/building-blocks/error-component/error-component';
 
-export async function loader(): Promise<OrganizationsPageProps | LoaderError> {
+export type OrganizationsCombinedData = {
+  organizations: OrganizationData[];
+  organizationsCount: number;
+};
+
+export async function loader(): Promise<QueryData<OrganizationsCombinedData> | LoaderError> {
   try {
-    const [organizations, organizationsCount] = await Promise.all([
+    const [organizationsResult, organizationsCountResult] = await Promise.all([
       executePostgresQuery<OrganizationData>(organizationsQuery, ['10', '0']),
       executePostgresQuery<OrganizationCountData>(organizationsCountQuery),
     ]);
 
+    if (organizationsResult.isError) {
+      return organizationsResult;
+    }
+    if (organizationsCountResult.isError) {
+      return organizationsCountResult;
+    }
+
     return {
-      organizations,
-      organizationsCount,
+      isError: false,
+      data: {
+        organizations: organizationsResult.data,
+        organizationsCount: organizationsCountResult.data[0]?.total || 0,
+      },
     };
   } catch (error) {
     console.error('Error in organizations loader:', error);
@@ -24,20 +38,11 @@ export async function loader(): Promise<OrganizationsPageProps | LoaderError> {
 }
 
 interface OrganizationsPageProps {
-  organizations: QueryData<OrganizationData[]>;
-  organizationsCount: QueryData<OrganizationCountData[]>;
+  organizationsData: QueryData<OrganizationsCombinedData>;
 }
 
-export default function OrganizationsPage() {
-  const data = useLoaderData<typeof loader>();
-
-  if ('error' in data) {
-    return <ErrorComponent errorMessage={data.error} />;
-  }
-
-  const { organizations, organizationsCount } = data;
-
-  const organizationsFetcher = useFetcher<QueryData<{ organizations: OrganizationData[]; organizationsCount: number }>>();
+export default function OrganizationsPage({ organizationsData }: OrganizationsPageProps) {
+  const organizationsFetcher = useFetcher<QueryData<OrganizationsCombinedData>>();
 
   useEffect(() => {
     // Initial fetch is handled by the loader, but useFetcher can be used for subsequent updates
@@ -56,18 +61,15 @@ export default function OrganizationsPage() {
     );
   };
 
-  const currentOrganizationsData = organizationsFetcher.data?.data?.organizations || organizations.data;
-  const currentOrganizationsCount = organizationsFetcher.data?.data?.organizationsCount || organizationsCount.data?.[0]?.total;
-
   return (
     <div className="container mx-auto py-8 space-y-8">
       <h1 className="text-3xl font-bold mb-6">Organizations</h1>
       <WithErrorHandling
-        queryData={organizationsFetcher.data || organizations}
+        queryData={organizationsFetcher.data || organizationsData}
         render={(data) => (
           <OrganizationsTable
-            organizations={currentOrganizationsData || []}
-            organizationsCount={currentOrganizationsCount || 0}
+            organizations={data.organizations || []}
+            organizationsCount={data.organizationsCount || 0}
             isLoading={organizationsFetcher.state === 'submitting'}
             onFiltersChange={handleOrganizationsTableFiltersChange}
           />
