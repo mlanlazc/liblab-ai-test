@@ -2,7 +2,7 @@ import { UniversalTableCard } from '@/components/building-blocks/universal-table
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { LoaderComponent } from '@/components/building-blocks/loader-component/loader-component';
 
 export const organizationsQuery = `
   SELECT organization_id, organization_name, industry, address, phone, email, created_at, subscription_tier, last_payment_date, next_payment_date
@@ -26,8 +26,8 @@ export type OrganizationData = {
   email: string;
   created_at: string;
   subscription_tier: string;
-  last_payment_date: string | null;
-  next_payment_date: string | null;
+  last_payment_date: string;
+  next_payment_date: string;
 };
 
 export interface OrganizationCountData {
@@ -82,7 +82,7 @@ export function OrganizationsTable({ organizations, organizationsCount, isLoadin
   return (
     <UniversalTableCard
       title="Organizations"
-      description="List of all organizations and their details"
+      description="List of all organizations"
       CardFooterComponent={PaginationControls}
     >
       <Table>
@@ -104,7 +104,7 @@ export function OrganizationsTable({ organizations, organizationsCount, isLoadin
           {isLoading ? (
             <TableRow>
               <TableCell colSpan={10} className="text-center">
-                Loading...
+                <LoaderComponent />
               </TableCell>
             </TableRow>
           ) : organizations.length === 0 ? (
@@ -114,7 +114,7 @@ export function OrganizationsTable({ organizations, organizationsCount, isLoadin
               </TableCell>
             </TableRow>
           ) : (
-            organizations.map((org: OrganizationData) => (
+            organizations.map((org) => (
               <TableRow key={org.organization_id}>
                 <TableCell>{org.organization_id}</TableCell>
                 <TableCell>{org.organization_name}</TableCell>
@@ -122,10 +122,10 @@ export function OrganizationsTable({ organizations, organizationsCount, isLoadin
                 <TableCell>{org.address}</TableCell>
                 <TableCell>{org.phone}</TableCell>
                 <TableCell>{org.email}</TableCell>
-                <TableCell>{format(new Date(org.created_at), 'PPP')}</TableCell>
+                <TableCell>{new Date(org.created_at).toLocaleDateString()}</TableCell>
                 <TableCell>{org.subscription_tier}</TableCell>
-                <TableCell>{org.last_payment_date ? format(new Date(org.last_payment_date), 'PPP') : '-'}</TableCell>
-                <TableCell>{org.next_payment_date ? format(new Date(org.next_payment_date), 'PPP') : '-'}</TableCell>
+                <TableCell>{org.last_payment_date ? new Date(org.last_payment_date).toLocaleDateString() : '-'}</TableCell>
+                <TableCell>{org.next_payment_date ? new Date(org.next_payment_date).toLocaleDateString() : '-'}</TableCell>
               </TableRow>
             ))
           )}
